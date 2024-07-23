@@ -1,0 +1,107 @@
+services:
+  delugevpn:
+    image: binhex/arch-delugevpn:2.1.1-6-05
+    container_name: delugevpn
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_USER=${VPN_USER}
+      - VPN_PASS=${VPN_PASS}
+      - VPN_PROV=custom
+      - VPN_CLIENT=openvpn
+      - ENABLE_STARTUP_SCRIPTS=no
+      - ENABLE_PRIVOXY=yes
+      - STRICT_PORT_FORWARD=yes
+      - USERSPACE_WIREGUARD=no
+      - ENABLE_SOCKS=yes
+      - SOCKS_USER=admin
+      - SOCKS_PASS=socks
+      - LAN_NETWORK=${LAN_NETWORK}
+      - NAME_SERVERS=84.200.69.80,37.235.1.174,1.1.1.1,37.235.1.177,84.200.70.40,1.0.0.1
+      - DELUGE_DAEMON_LOG_LEVEL=${DELUGE_DAEMON_LOG_LEVEL}
+      - DELUGE_WEB_LOG_LEVEL=${DELUGE_WEB_LOG_LEVEL}
+      - DELUGE_ENABLE_WEBUI_PASSWORD=${DELUGE_ENABLE_WEBUI_PASSWORD}
+      - VPN_INPUT_PORTS=8989,9897,9696,7878,5055,8112,32400
+      - VPN_OUTPUT_PORTS=8989,9897,9696,7878,5055,8112,32400
+      - DEBUG=${DEBUG}
+      - UMASK=${UMASK}
+      - PUID=${USERID}
+      - PGID=${GROUPID}
+    ports:
+      - "8112:8112"
+      - "8118:8118"
+      - "9118:9118"
+      - "58846:58846"
+      - "58946:58946"
+      - "58946:58946/udp"
+      - "8989:8989"
+      - "9897:9897"
+      - "9696:9696"
+      - "7878:7878"
+      - "5055:5055"
+    volumes:
+      - /mnt:/media
+      - ./config/deluge:/config
+      - ./vpn_config:/config/openvpn
+      - /etc/localtime:/etc/localtime:ro
+    user: "${USERID}:${GROUPID}"
+    restart: unless-stopped
+  sonarr:
+    image: binhex/arch-sonarr:4.0.8.1874-1-01
+    container_name: sonarr
+    environment:
+      - UMASK=${UMASK}
+      - PUID=${USERID}
+      - PGID=${GROUPID}
+    volumes:
+      - /mnt:/media
+      - ./config/sonarr:/config
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: "service:delugevpn"
+    depends_on:
+      - delugevpn
+    restart: unless-stopped
+  radarr:
+    image: binhex/arch-radarr:5.8.3.8933-1-01
+    container_name: radarr
+    environment:
+      - UMASK=${UMASK}
+      - PUID=${USERID}
+      - PGID=${GROUPID}
+    volumes:
+      - /mnt:/media
+      - ./config/radarr:/config
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: "service:delugevpn"
+    depends_on:
+      - delugevpn
+    restart: unless-stopped
+  prowlarr:
+    image: binhex/arch-prowlarr:1.20.1.4603-1-01
+    container_name: prowlarr
+    environment:
+      - UMASK=${UMASK}
+      - PUID=${USERID}
+      - PGID=${GROUPID}
+    volumes:
+      - ./config/prowlarr:/config
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: "service:delugevpn"
+    depends_on:
+      - delugevpn
+    restart: unless-stopped
+  overseerr:
+    image: binhex/arch-overseerr:1.33.2-1-05
+    container_name: overseerr
+    environment:
+      - UMASK=${UMASK}
+      - PUID=${USERID}
+      - PGID=${GROUPID}
+    volumes:
+      - ./config/overseerr:/config
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: "service:delugevpn"
+    depends_on:
+      - delugevpn
+    restart: unless-stopped
+
