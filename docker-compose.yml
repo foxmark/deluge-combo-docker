@@ -77,7 +77,7 @@ services:
       - delugevpn
     restart: unless-stopped
   prowlarr:
-    image: binhex/arch-prowlarr:1.20.1.4603-1-01
+    image: binhex/arch-prowlarr:1.21.2.4649-1-02
     container_name: prowlarr
     environment:
       - UMASK=${UMASK}
