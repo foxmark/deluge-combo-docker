@@ -4,6 +4,7 @@ services:
     container_name: delugevpn
     cap_add:
       - NET_ADMIN
+    privileged: true
     environment:
       - VPN_USER=${VPN_USER}
       - VPN_PASS=${VPN_PASS}
